@@ -1,0 +1,21 @@
+{
+  "name": "web-register-loan",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:register": "playwright test tests/register.spec.ts",
+    "test:headed": "playwright test --headed",
+    "codegen:register": "playwright codegen https://app.boontermeasycash.com/register/moih",
+    "report": "playwright show-report"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@types/node": "^26.5.0"
+  }
+}
