@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 
 export class BasePage {
   readonly page: Page;
-  readonly baseURL = 'https://app.boontermeasycash.com';
+  readonly baseURL = process.env.BASE_URL ?? 'https://app-sit.boontermeasycash.com:8443';
 
   constructor(page: Page) {
     this.page = page;

@@ -7,7 +7,7 @@
     "test": "playwright test",
     "test:register": "playwright test tests/register.spec.ts",
     "test:headed": "playwright test --headed",
-    "codegen:register": "playwright codegen https://app.boontermeasycash.com/register/moih",
+    "codegen:register": "playwright codegen https://app-sit.boontermeasycash.com:8443/register/moih",
     "report": "playwright show-report"
   },
   "keywords": [],
@@ -16,6 +16,7 @@
   "type": "commonjs",
   "devDependencies": {
     "@playwright/test": "^1.63.0",
-    "@types/node": "^26.5.0"
+    "@types/node": "^26.5.0",
+    "dotenv": "^17.4.2"
   }
 }
