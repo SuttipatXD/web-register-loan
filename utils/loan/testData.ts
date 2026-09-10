@@ -8,14 +8,12 @@ import { generateThaiIdNumber } from './generateThaiId';
  * real ID-verification/credit-check step, so the flow won't reach a genuine "success" result.
  * Replace with QA-approved values from your team to run the flow end-to-end for real.
  */
-const generatedIdNumber = generateThaiIdNumber();
-
 export const personalInfo: PersonalInfo = {
   titlePrefix: 'นาย',
   firstname: 'ทดสอบ',
   surname: 'ระบบ',
   dateOfBirth: '01/01/2540',
-  idNumber: generatedIdNumber,
+  idNumber: generateThaiIdNumber(),
   idLaserCode: 'AA2222222222',
   primaryPhone: '0812345678',
   secondaryPhone: '',
