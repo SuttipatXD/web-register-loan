@@ -3,7 +3,7 @@ import { BasePage } from './BasePage';
 
 /** The "สินเชื่อ แฮปปี้ ทวีคูณ" product lives on the /menu/sukjai page. */
 export class LoanMenuPage extends BasePage {
-  readonly path = '/register/moih/menu/sukjai';
+  readonly path = '/menu/sukjai';
   readonly applyBanner: Locator;
 
   constructor(page: Page) {

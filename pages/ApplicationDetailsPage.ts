@@ -77,6 +77,7 @@ export class ApplicationDetailsPage extends BasePage {
   readonly ncbConsentCheckbox: Locator;
   readonly personalLoanTermsConsentCheckbox: Locator;
   readonly bankLoanDeductionConsentCheckbox: Locator;
+  readonly stampDutyConsentCheckbox: Locator;
   readonly nextButton: Locator;
 
   constructor(page: Page) {
@@ -123,6 +124,7 @@ export class ApplicationDetailsPage extends BasePage {
     this.ncbConsentCheckbox = page.locator('#is_consent_ncb');
     this.personalLoanTermsConsentCheckbox = page.locator('#is_consent_approved_personalloan');
     this.bankLoanDeductionConsentCheckbox = page.locator('#is_consent_approved_bankloan');
+    this.stampDutyConsentCheckbox = page.getByRole('checkbox', { name: /ค่าอากรแสตมป์/ });
     this.nextButton = page.getByRole('button', { name: /ถัดไป/ });
   }
 
@@ -206,6 +208,7 @@ export class ApplicationDetailsPage extends BasePage {
     await this.ncbConsentCheckbox.check();
     await this.personalLoanTermsConsentCheckbox.check();
     await this.bankLoanDeductionConsentCheckbox.check();
+    await this.stampDutyConsentCheckbox.check();
   }
 
   /**

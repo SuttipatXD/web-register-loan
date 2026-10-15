@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
-    "test:register": "playwright test tests/register.spec.ts",
+    "test:moih": "LOAN_GROUP=moih playwright test",
+    "test:osm": "LOAN_GROUP=osm playwright test",
+    "test:register:moih": "LOAN_GROUP=moih playwright test tests/register.spec.ts",
+    "test:register:osm": "LOAN_GROUP=osm playwright test tests/register.spec.ts",
     "test:headed": "playwright test --headed",
     "codegen:register": "playwright codegen https://app-sit.boontermeasycash.com:8443/register/moih",
     "report": "playwright show-report"

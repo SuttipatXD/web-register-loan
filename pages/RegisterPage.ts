@@ -2,7 +2,7 @@ import { Page, Locator, Response } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export class RegisterPage extends BasePage {
-  readonly path = '/register/moih';
+  readonly path = '';
 
   readonly brandHeading: Locator;
   readonly loadingIndicator: Locator;

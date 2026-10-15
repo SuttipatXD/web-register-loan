@@ -9,6 +9,7 @@ import { ApplicationDetailsPage } from '../pages/ApplicationDetailsPage';
 import { DocumentUploadPage } from '../pages/DocumentUploadPage';
 import { InsurancePage } from '../pages/InsurancePage';
 import { OtpPage } from '../pages/OtpPage';
+import { ContractPage } from '../pages/ContractPage';
 import { ApplicationResultPage } from '../pages/ApplicationResultPage';
 import { getHappyTavikoonTestData } from '../utils/loan/happyTavikoon';
 
@@ -68,12 +69,14 @@ test('apply for แฮปปี้ทวีคูณ loan: camera denied, galler
   await documentUploadPage.submit();
 
   const insurancePage = new InsurancePage(page);
-  await insurancePage.declineAndContinue();
+  await insurancePage.confirmInsurance();
 
   // Sends a real SMS to testData.personalInfo.primaryPhone — only run this with a phone
   // number you can actually read the OTP from. '123456' per QA's SIT-environment guidance.
   const otpPage = new OtpPage(page);
   await otpPage.enterCodeAndConfirm('123456');
+
+  await new ContractPage(page).continue();
 
   const resultPage = new ApplicationResultPage(page);
   expect(await resultPage.isSuccess()).toBeTruthy();

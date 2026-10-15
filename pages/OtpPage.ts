@@ -16,18 +16,15 @@ export class OtpPage extends BasePage {
     super(page);
     this.singleCodeInput = page.locator('input[maxlength="6"], input[maxlength="6"][inputmode="numeric"]').first();
     this.perDigitInputs = page.locator('input[maxlength="1"]');
-    this.confirmButton = page.getByRole('button', { name: /ยืนยัน/ });
+    this.confirmButton = page.getByRole('button', { name: /ยืนยัน OTP/ });
   }
 
   async enterCodeAndConfirm(code: string): Promise<void> {
-    if (await this.singleCodeInput.count()) {
-      await this.singleCodeInput.pressSequentially(code);
-    } else {
-      const digitCount = await this.perDigitInputs.count();
-      for (let i = 0; i < Math.min(digitCount, code.length); i++) {
-        await this.perDigitInputs.nth(i).pressSequentially(code[i]);
-      }
-    }
+    // Verified live: a single "ใส่รหัส OTP" textbox, and the "ยืนยัน OTP" button stays disabled
+    // until it has a value.
+    const input = this.page.getByRole('textbox', { name: 'ใส่รหัส OTP' });
+    await input.waitFor({ state: 'visible', timeout: 30000 });
+    await input.pressSequentially(code);
     await this.confirmButton.click();
   }
 }

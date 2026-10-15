@@ -18,6 +18,7 @@ export class DocumentUploadPage extends BasePage {
   readonly cameraErrorOkButton: Locator;
   readonly fileInputs: Locator;
   readonly submitButton: Locator;
+  readonly previewButtons: Locator;
   // File-input ids double as the backend's document "file_id" values (verified live by
   // intercepting the app's own upload calls: FormData carries `file_id=531` for the input
   // with id="531"). The checklist page itself fetches
@@ -36,6 +37,7 @@ export class DocumentUploadPage extends BasePage {
     this.openCameraButton = page.getByRole('button', { name: 'เริ่มถ่ายภาพ', exact: true });
     this.cameraErrorOkButton = page.getByRole('button', { name: 'ตกลง' });
     this.fileInputs = page.locator('input[type="file"]');
+    this.previewButtons = page.getByRole('button', { name: 'เปลี่ยนรูปภาพ' });
     this.submitButton = page.getByRole('button', { name: /ยืนยัน|ส่งข้อมูล|ถัดไป/ });
 
     page.on('response', async (res) => {
@@ -104,7 +106,8 @@ export class DocumentUploadPage extends BasePage {
       ]).catch(() => 'neither' as const);
 
       if (outcome === 'dialog') {
-        await this.cameraErrorOkButton.click();
+        // The dialog can detach mid-click (re-render); the outer loop retries, so don't fail here.
+        await this.cameraErrorOkButton.click({ timeout: 5000 }).catch(() => {});
       } else if (outcome === 'checklist') {
         return;
       }
@@ -136,14 +139,16 @@ export class DocumentUploadPage extends BasePage {
    * still attempts the uploads and will succeed automatically once the SIT backend is fixed.
    */
   async attachPhotosUntilQuotaReached(imagesDir: string): Promise<number> {
-    const files = fs
-      .readdirSync(imagesDir)
-      .filter((f) => /\.(png|jpe?g)$/i.test(f))
-      .map((f) => path.join(imagesDir, f));
-
-    if (files.length === 0) {
-      throw new Error(`No images found in ${imagesDir}`);
-    }
+    // The app validates the first slot client-side ("กรุณาเลือกภาพบัตรประชาชน...") so each slot
+    // needs the right kind of photo: slot 1 = ID card, slot 2 = selfie with ID, rest = other docs.
+    const pick = (name: string): string => {
+      const file = path.join(imagesDir, name);
+      if (!fs.existsSync(file)) throw new Error(`Missing test image ${file}`);
+      return file;
+    };
+    const idCard = pick('id_card.png');
+    const face = pick('face.png');
+    const other = pick('other.png');
 
     await this.fileInputs.first().waitFor({ state: 'attached' });
     // The checklist's file inputs mount progressively; give them a moment to settle so
@@ -161,18 +166,48 @@ export class DocumentUploadPage extends BasePage {
       inputs.map((el) => (el as HTMLInputElement).id)
     );
 
+    // Attach every slot (required and optional). A slot counts as filled once the app shows a
+    // preview for it, i.e. one more "เปลี่ยนรูปภาพ" (change photo) button appears. If a photo is
+    // rejected (error dialog, no preview) dismiss the dialog and retry the slot with the other
+    // photos, preferred one first.
     let filled = 0;
     for (let i = 0; i < inputIds.length; i++) {
-      if (!this.requiredFileIds.has(inputIds[i])) continue;
-      const file = files[filled % files.length];
-      await this.fileInputs.nth(i).setInputFiles(file);
-      filled++;
-      // Each selection kicks off an async upload to the server; the "ถัดไป" button only
-      // enables once it completes, so let the network settle before moving to the next one.
-      await this.page.waitForLoadState('networkidle');
+      const preferred = i === 0 ? idCard : i === 1 ? face : other;
+      const candidates = [preferred, ...[idCard, face, other].filter((f) => f !== preferred)];
+      for (const file of candidates) {
+        const before = await this.previewButtons.count();
+        await this.fileInputs.nth(i).setInputFiles(file);
+        const previewed = await this.waitForPreview(before);
+        await this.dismissErrorDialog();
+        if (previewed) {
+          filled++;
+          break;
+        }
+      }
     }
     await this.waitUntilReadyToSubmit();
     return filled;
+  }
+
+  /** Waits for a new preview to appear (upload + server checks done); false if none shows up. */
+  private async waitForPreview(countBefore: number, timeout = 15000): Promise<boolean> {
+    const deadline = Date.now() + timeout;
+    while (Date.now() < deadline) {
+      if ((await this.previewButtons.count()) > countBefore) return true;
+      // A rejection dialog means no preview is coming for this photo.
+      if (await this.cameraErrorOkButton.isVisible()) return false;
+      await this.page.waitForTimeout(300);
+    }
+    return false;
+  }
+
+  private async dismissErrorDialog(): Promise<void> {
+    // Rejection dialogs can pop up a moment after the upload settles.
+    await this.page.waitForTimeout(1500);
+    while (await this.cameraErrorOkButton.isVisible()) {
+      await this.cameraErrorOkButton.click({ timeout: 5000 }).catch(() => {});
+      await this.page.waitForTimeout(500);
+    }
   }
 
   /**
