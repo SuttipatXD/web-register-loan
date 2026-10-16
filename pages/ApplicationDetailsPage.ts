@@ -79,6 +79,19 @@ export class ApplicationDetailsPage extends BasePage {
   readonly bankLoanDeductionConsentCheckbox: Locator;
   readonly stampDutyConsentCheckbox: Locator;
   readonly knoxGuardConsentCheckbox: Locator;
+  readonly disclosureConsentCheckbox: Locator;
+  readonly landUseTypeSelect: Locator;
+  readonly deedNumberInput: Locator;
+  readonly landNumberInput: Locator;
+  readonly deedProvinceSelect: Locator;
+  readonly deedAmphurSelect: Locator;
+  readonly deedDistrictSelect: Locator;
+  readonly landOwnerSelect: Locator;
+  readonly objectiveSelect: Locator;
+  readonly vehicleTypeSelect: Locator;
+  readonly vehicleBrandSelect: Locator;
+  readonly vehicleModelSelect: Locator;
+  readonly vehicleRegistrationYearSelect: Locator;
   readonly nextButton: Locator;
 
   constructor(page: Page) {
@@ -130,6 +143,20 @@ export class ApplicationDetailsPage extends BasePage {
       .or(page.locator('#confirm_stamp'));
     // Only on the มือถือผ่อนสินค้า form (device security-system consent).
     this.knoxGuardConsentCheckbox = page.locator('input[type="checkbox"]#is_consent_knoxGuard');
+    // Only on ทะเบียนรถแลกเงิน.
+    this.disclosureConsentCheckbox = page.locator('input[type="checkbox"]#is_consent_disclose');
+    this.landUseTypeSelect = page.locator('#loansecured_type');
+    this.deedNumberInput = page.locator('#deed_no');
+    this.landNumberInput = page.locator('#land_no');
+    this.deedProvinceSelect = page.locator('#deed_province');
+    this.deedAmphurSelect = page.locator('#deed_amphur');
+    this.deedDistrictSelect = page.locator('#deed_district');
+    this.landOwnerSelect = page.locator('#land_owner');
+    this.objectiveSelect = page.locator('#objective_other');
+    this.vehicleTypeSelect = page.locator('#car_type');
+    this.vehicleBrandSelect = page.locator('#car_brand');
+    this.vehicleModelSelect = page.locator('#car_model');
+    this.vehicleRegistrationYearSelect = page.locator('#car_reg_yaer');
     this.nextButton = page.getByRole('button', { name: /ถัดไป/ });
   }
 
@@ -152,8 +179,49 @@ export class ApplicationDetailsPage extends BasePage {
     await this.salaryPaymentTimeInput.fill('12:00');
   }
 
+  /** ทะเบียนรถแลกเงิน only: motorcycle type/brand/model/registration year. */
+  async fillVehicle(): Promise<void> {
+    await this.vehicleTypeSelect.selectOption({ index: 1 });
+    await this.vehicleBrandSelect.selectOption({ index: 1 });
+    // Model options load after a brand is chosen.
+    await this.page.waitForFunction(
+      () => (document.querySelector('#car_model') as HTMLSelectElement)?.options.length > 1
+    );
+    await this.vehicleModelSelect.selectOption({ index: 1 });
+    await this.vehicleRegistrationYearSelect.selectOption({ index: 1 });
+  }
+
+  /** โฉนดแลกเงิน only: collateral land deed details. */
+  async fillLandDeed(): Promise<void> {
+    await this.landUseTypeSelect.selectOption({ index: 1 });
+    // A deed can only back one contract, so reusing a number is rejected ("จดจำนองกับสัญญาอื่นแล้ว").
+    await this.deedNumberInput.pressSequentially(String(Math.floor(100000 + Math.random() * 900000)));
+    await this.landNumberInput.pressSequentially('99');
+    await this.deedProvinceSelect.selectOption({ label: 'กรุงเทพมหานคร' });
+    // District options load after the province is chosen.
+    await this.page.waitForFunction(
+      () => (document.querySelector('#deed_amphur') as HTMLSelectElement)?.options.length > 1
+    );
+    await this.deedAmphurSelect.selectOption({ index: 1 });
+    await this.page.waitForFunction(
+      () => (document.querySelector('#deed_district') as HTMLSelectElement)?.options.length > 1
+    );
+    await this.deedDistrictSelect.selectOption({ index: 1 });
+    await this.landOwnerSelect.selectOption({ label: 'ตนเอง' });
+  }
+
   async fill(info: ApplicationDetails): Promise<void> {
     await this.referralSourceSelect.selectOption({ index: 1 });
+    // Pre-selected on most products; a required choice on ทะเบียนรถแลกเงิน.
+    if (!(await this.objectiveSelect.inputValue())) {
+      await this.objectiveSelect.selectOption({ index: 1 });
+    }
+    if (await this.vehicleTypeSelect.count()) {
+      await this.fillVehicle();
+    }
+    if (await this.deedNumberInput.count()) {
+      await this.fillLandDeed();
+    }
 
     // The มือถือผ่อนสินค้า form pre-fills and locks the home address from the eligibility step.
     if (await this.provinceSelect.isEnabled()) {
@@ -222,7 +290,13 @@ export class ApplicationDetailsPage extends BasePage {
     await this.ncbConsentCheckbox.check();
     await this.personalLoanTermsConsentCheckbox.check();
     await this.bankLoanDeductionConsentCheckbox.check();
-    await this.stampDutyConsentCheckbox.check();
+    // Not on every product's form (e.g. absent for เกษตรสุขใจ).
+    if (await this.stampDutyConsentCheckbox.count()) {
+      await this.stampDutyConsentCheckbox.check();
+    }
+    if (await this.disclosureConsentCheckbox.count()) {
+      await this.disclosureConsentCheckbox.check();
+    }
     if (await this.knoxGuardConsentCheckbox.count()) {
       await this.knoxGuardConsentCheckbox.check();
     }

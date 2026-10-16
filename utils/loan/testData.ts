@@ -26,11 +26,19 @@ export const personalInfo: PersonalInfo = {
  * Each loan test applies under its product's name (firstname) with surname "ทดสอบ", so test
  * applications are easy to tell apart on SIT.
  */
-export type LoanProduct = "happyTavikoon" | "mobileInstallment";
+export type LoanProduct =
+  | "happyTavikoon"
+  | "mobileInstallment"
+  | "kasetSukjai"
+  | "carTitleLoan"
+  | "landTitleLoan";
 
 export const loanApplicantNames: Record<LoanProduct, string> = {
   happyTavikoon: "แฮปปี้ทวีคูณ",
   mobileInstallment: "มือถือผ่อนสินค้า",
+  kasetSukjai: "เกษตรสุขใจ",
+  carTitleLoan: "ทะเบียนรถแลกเงิน",
+  landTitleLoan: "โฉนดแลกเงิน",
 };
 
 export const desiredCreditAmount = "10000";
@@ -72,15 +80,27 @@ export function getPersonalInfo(product: LoanProduct): PersonalInfo | null {
   return { ...personalInfo, firstname: loanApplicantNames[product], surname: "ทดสอบ" };
 }
 
-/** Full test data for the "สินเชื่อ แฮปปี้ ทวีคูณ" product; null until personal info is set. */
-export function getHappyTavikoonTestData(): LoanApplicationData | null {
-  const info = getPersonalInfo("happyTavikoon");
+/**
+ * Credit amount per product — the options differ (e.g. โฉนดแลกเงิน starts at 30,000), so the
+ * default 10,000 isn't valid everywhere.
+ */
+const creditAmountFor: Record<LoanProduct, string> = {
+  happyTavikoon: desiredCreditAmount,
+  mobileInstallment: desiredCreditAmount,
+  kasetSukjai: desiredCreditAmount,
+  carTitleLoan: desiredCreditAmount,
+  landTitleLoan: "30000",
+};
+
+/** Full test data for any loan product using the shared flow; null until personal info is set. */
+export function getLoanTestData(product: LoanProduct): LoanApplicationData | null {
+  const info = getPersonalInfo(product);
   if (!info) {
     return null;
   }
 
   return {
-    desiredCreditAmount,
+    desiredCreditAmount: creditAmountFor[product],
     personalInfo: info,
     insurance: sharedInsuranceInfo,
     applicationDetails,

@@ -9,6 +9,9 @@
 |---|---|---|
 | [tests/register.spec.ts](tests/register.spec.ts) | เปิดหน้าลงทะเบียน | หน้าโหลดสำเร็จ |
 | | สมัครสินเชื่อ **แฮปปี้ทวีคูณ** | เมนู sukjai → เงื่อนไข → ตรวจสอบคุณสมบัติ → PDPA → รายละเอียดใบสมัคร → เอกสาร → ประกัน → OTP → สัญญา → ผลลัพธ์ |
+| [tests/kaset.spec.ts](tests/kaset.spec.ts) | สมัครสินเชื่อ **เกษตรสุขใจ** | เหมือนแฮปปี้ทวีคูณ (เมนู kasetsukjai) |
+| [tests/car.spec.ts](tests/car.spec.ts) | สมัครสินเชื่อ **ทะเบียนรถแลกเงิน** | เมนู rotleakngern → เงื่อนไข → หน้าภาระหนี้ → ฟอร์มมีข้อมูลรถ → เอกสารหลายขั้น (รวมรูปรถ 4 ด้าน, เลขตัวถัง, เลขไมล์ + consent ครอบครองรถ) → ประกัน → OTP → สัญญา |
+| [tests/land.spec.ts](tests/land.spec.ts) | สมัครสินเชื่อ **โฉนดแลกเงิน** | เมนู landforcash → consent ของตัวเอง → หน้าภาระหนี้ → ฟอร์มมีข้อมูลโฉนด (เลขโฉนดสุ่มใหม่ทุกครั้ง) → เอกสาร → OTP → สัญญา (ไม่มีประกัน) |
 | [tests/mobile.spec.ts](tests/mobile.spec.ts) | สมัครสินเชื่อ **มือถือผ่อนสินค้า** | storefront → ตรวจสอบคุณสมบัติ → PDPA → เลือกสินค้า (Galaxy A17, ผ่อน 24 เดือน) → รายละเอียดใบสมัคร → เอกสาร → OTP → สัญญา → ผลลัพธ์ (ไม่มีขั้นประกัน) |
 
 ## ติดตั้ง
@@ -39,6 +42,7 @@ BASE_URL_OSM=https://app-sit.boontermeasycash.com:8443/register/osm
 | `npm run test:osm` | เทสทั้งหมดของกลุ่ม osm |
 | `npm run test:register:moih` / `test:register:osm` | เฉพาะแฮปปี้ทวีคูณ + เปิดหน้าลงทะเบียน |
 | `npm run test:mobile:moih` | เฉพาะมือถือผ่อนสินค้า (moih) |
+| `npm run test:kaset:moih` / `test:car:moih` / `test:land:moih` | เฉพาะเกษตรสุขใจ / ทะเบียนรถแลกเงิน / โฉนดแลกเงิน (moih) |
 | `npm test` | ทั้งหมด ใช้ `BASE_URL` / ค่า default |
 | `npm run test:headed` | เปิดเบราว์เซอร์ให้เห็นระหว่างรัน |
 | `npm run report` | เปิดรายงาน HTML |
@@ -56,12 +60,12 @@ BASE_URL_OSM=https://app-sit.boontermeasycash.com:8443/register/osm
 - **รูปเอกสาร:** [utils/images/](utils/images/) (`id_card.png`, `face.png`, `other.png`)
 - ฟังก์ชัน `getPersonalInfo(product)` และ `getHappyTavikoonTestData()` คืน `null` ถ้าข้อมูลผู้สมัครไม่ครบ เทสจะ skip เอง
 
-เพิ่มสินเชื่อใหม่: เพิ่มชื่อใน `LoanProduct` และ `loanApplicantNames` แล้วเรียก `getPersonalInfo('<ชื่อ>')` ในเทส
+เพิ่มสินเชื่อใหม่: เพิ่มชื่อใน `LoanProduct`, `loanApplicantNames` และ `creditAmountFor` แล้วเขียนเทสโดยเรียก `applyForLoan(page, { menuSlug, ... })` พร้อม `getLoanTestData('<ชื่อ>')` (ถ้าโฟลว์ต่างจากโฟลว์กลาง ให้เขียนเทสแยกแบบ `mobile.spec.ts`)
 
 ## โครงสร้างโปรเจกต์
 
 ```
-tests/                  เทส (register.spec.ts, mobile.spec.ts)
+tests/                  เทสของแต่ละสินเชื่อ
 pages/                  Page Object ของแต่ละหน้า
   BasePage.ts             เลือก base URL ตาม LOAN_GROUP
   MobileLoanCheckPage.ts  ฟอร์มตรวจสอบคุณสมบัติของมือถือผ่อนสินค้า
@@ -69,6 +73,7 @@ pages/                  Page Object ของแต่ละหน้า
   DocumentUploadPage.ts   อัปโหลดเอกสาร
   InsurancePage.ts / OtpPage.ts / ContractPage.ts / ApplicationResultPage.ts ...
 utils/loan/             ข้อมูลทดสอบ + ตัวสร้างเลขบัตร
+  applyFlow.ts            โฟลว์สมัครกลาง (ใช้กับ แฮปปี้ทวีคูณ / เกษตรสุขใจ / ทะเบียนรถ / โฉนด)
 utils/images/           รูปสำหรับอัปโหลด
 playwright.config.ts    timeout 120 วินาที, วิดีโอเปิดตลอด, deny สิทธิ์กล้อง
 ```

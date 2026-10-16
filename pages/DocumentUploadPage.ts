@@ -141,6 +141,7 @@ export class DocumentUploadPage extends BasePage {
   async attachPhotosUntilQuotaReached(imagesDir: string): Promise<number> {
     // The app validates the first slot client-side ("กรุณาเลือกภาพบัตรประชาชน...") so each slot
     // needs the right kind of photo: slot 1 = ID card, slot 2 = selfie with ID, rest = other docs.
+    this.imagesDir = imagesDir;
     const pick = (name: string): string => {
       const file = path.join(imagesDir, name);
       if (!fs.existsSync(file)) throw new Error(`Missing test image ${file}`);
@@ -166,14 +167,28 @@ export class DocumentUploadPage extends BasePage {
       inputs.map((el) => (el as HTMLInputElement).id)
     );
 
-    // Attach every slot (required and optional). A slot counts as filled once the app shows a
-    // preview for it, i.e. one more "เปลี่ยนรูปภาพ" (change photo) button appears. If a photo is
-    // rejected (error dialog, no preview) dismiss the dialog and retry the slot with the other
-    // photos, preferred one first.
+    const filled = await this.attachToAllSlots(inputIds.length, (i) =>
+      i === 0 ? idCard : i === 1 ? face : other
+    );
+    await this.waitUntilReadyToSubmit();
+    return filled;
+  }
+
+  /**
+   * Attach every slot (required and optional). A slot counts as filled once the app shows a
+   * preview for it, i.e. one more "เปลี่ยนรูปภาพ" (change photo) button appears. If a photo is
+   * rejected (error dialog, no preview) dismiss the dialog and retry the slot with the other
+   * photos, preferred one first.
+   */
+  private async attachToAllSlots(
+    slotCount: number,
+    preferredFor: (index: number) => string
+  ): Promise<number> {
+    const all = ['id_card.png', 'face.png', 'other.png'].map((n) => this.imagePath(n));
     let filled = 0;
-    for (let i = 0; i < inputIds.length; i++) {
-      const preferred = i === 0 ? idCard : i === 1 ? face : other;
-      const candidates = [preferred, ...[idCard, face, other].filter((f) => f !== preferred)];
+    for (let i = 0; i < slotCount; i++) {
+      const preferred = preferredFor(i);
+      const candidates = [preferred, ...all.filter((f) => f !== preferred)];
       for (const file of candidates) {
         const before = await this.previewButtons.count();
         await this.fileInputs.nth(i).setInputFiles(file);
@@ -185,8 +200,58 @@ export class DocumentUploadPage extends BasePage {
         }
       }
     }
-    await this.waitUntilReadyToSubmit();
     return filled;
+  }
+
+  /**
+   * Some products (ทะเบียนรถแลกเงิน, ...) chain extra "กรุณาแนบเอกสารเพิ่มเติม" stages after the
+   * first submit (supporting papers, then car photos, ...). Attaches every slot of each stage
+   * and submits, until no further stage shows up; returns the number of photos attached.
+   */
+  async attachAdditionalDocumentsIfAsked(imagesDir: string, maxStages = 5): Promise<number> {
+    this.imagesDir = imagesDir;
+    let total = 0;
+    for (let stage = 0; stage < maxStages; stage++) {
+      // Let the previous submit land, then see whether another stage with empty slots appears.
+      await this.page.waitForTimeout(2500);
+      // Past the document stages once the app moves on (e.g. to /insurance or OTP).
+      if (!/\/documents/.test(this.page.url())) break;
+      const asked = await this.page
+        .getByText('กรุณาแนบเอกสารเพิ่มเติม')
+        .waitFor({ state: 'visible', timeout: stage === 0 ? 8000 : 4000 })
+        .then(() => true)
+        .catch(() => false);
+      if (!asked || (await this.previewButtons.count()) > 0) break;
+
+      // Stages swap the file inputs in place; wait for the new set to mount and settle.
+      // No inputs means we're already being redirected on (e.g. to the insurance site).
+      const mounted = await this.fileInputs
+        .first()
+        .waitFor({ state: 'attached', timeout: 5000 })
+        .then(() => true)
+        .catch(() => false);
+      if (!mounted) break;
+      await this.page.waitForLoadState('networkidle');
+      await this.page.waitForTimeout(1000);
+      total += await this.attachToAllSlots(await this.fileInputs.count(), () =>
+        this.imagePath('other.png')
+      );
+      // The last stage asks to consent to the company taking possession of the vehicle.
+      const possession = this.page.getByRole('checkbox').first();
+      if ((await possession.count()) && !(await possession.isChecked())) {
+        await possession.check({ force: true });
+      }
+      // The app may have already redirected on mid-stage (inputs gone) — nothing left to submit.
+      if (!(await this.fileInputs.count())) break;
+      await this.waitUntilReadyToSubmit();
+      await this.submit();
+    }
+    return total;
+  }
+
+  private imagesDir = '';
+  private imagePath(name: string): string {
+    return path.join(this.imagesDir, name);
   }
 
   /** Waits for a new preview to appear (upload + server checks done); false if none shows up. */
