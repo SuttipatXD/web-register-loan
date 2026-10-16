@@ -8,6 +8,7 @@
     "test:moih": "LOAN_GROUP=moih playwright test",
     "test:osm": "LOAN_GROUP=osm playwright test",
     "test:register:moih": "LOAN_GROUP=moih playwright test tests/register.spec.ts",
+    "test:mobile:moih": "LOAN_GROUP=moih playwright test tests/mobile.spec.ts",
     "test:register:osm": "LOAN_GROUP=osm playwright test tests/register.spec.ts",
     "test:headed": "playwright test --headed",
     "codegen:register": "playwright codegen https://app-sit.boontermeasycash.com:8443/register/moih",

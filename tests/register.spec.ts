@@ -11,7 +11,7 @@ import { InsurancePage } from '../pages/InsurancePage';
 import { OtpPage } from '../pages/OtpPage';
 import { ContractPage } from '../pages/ContractPage';
 import { ApplicationResultPage } from '../pages/ApplicationResultPage';
-import { getHappyTavikoonTestData } from '../utils/loan/happyTavikoon';
+import { getHappyTavikoonTestData } from '../utils/loan/testData';
 
 const IMAGES_DIR = path.join(__dirname, '..', 'utils', 'images');
 
@@ -34,7 +34,7 @@ test('apply for แฮปปี้ทวีคูณ loan: camera denied, galler
   test.skip(
     !testData,
     'Set TEST_ID_NUMBER / TEST_ID_LASER_CODE / TEST_PHONE (QA-approved test data) before running this ' +
-      'against the live identity/credit-check API — see utils/loan/personalInfo.ts.'
+      'against the live identity/credit-check API — see utils/loan/testData.ts.'
   );
 
   // Camera permission is intentionally never granted, so any getUserMedia() call

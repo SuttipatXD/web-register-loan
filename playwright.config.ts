@@ -32,6 +32,10 @@ export default defineConfig({
   use: {
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     video: 'on',
+    /* Headed Chrome shows a real camera permission prompt on getUserMedia() and waits for a
+     * human, which stalls the document-capture step (headless auto-denies). The flow expects
+     * the camera to be denied, so deny prompts outright. */
+    launchOptions: { args: ['--deny-permission-prompts'] },
     trace: 'on-first-retry',
   },
 

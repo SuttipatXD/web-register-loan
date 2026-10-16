@@ -78,6 +78,7 @@ export class ApplicationDetailsPage extends BasePage {
   readonly personalLoanTermsConsentCheckbox: Locator;
   readonly bankLoanDeductionConsentCheckbox: Locator;
   readonly stampDutyConsentCheckbox: Locator;
+  readonly knoxGuardConsentCheckbox: Locator;
   readonly nextButton: Locator;
 
   constructor(page: Page) {
@@ -124,7 +125,11 @@ export class ApplicationDetailsPage extends BasePage {
     this.ncbConsentCheckbox = page.locator('#is_consent_ncb');
     this.personalLoanTermsConsentCheckbox = page.locator('#is_consent_approved_personalloan');
     this.bankLoanDeductionConsentCheckbox = page.locator('#is_consent_approved_bankloan');
-    this.stampDutyConsentCheckbox = page.getByRole('checkbox', { name: /ค่าอากรแสตมป์/ });
+    this.stampDutyConsentCheckbox = page
+      .getByRole('checkbox', { name: /ค่าอากรแสตมป์/ })
+      .or(page.locator('#confirm_stamp'));
+    // Only on the มือถือผ่อนสินค้า form (device security-system consent).
+    this.knoxGuardConsentCheckbox = page.locator('input[type="checkbox"]#is_consent_knoxGuard');
     this.nextButton = page.getByRole('button', { name: /ถัดไป/ });
   }
 
@@ -150,18 +155,21 @@ export class ApplicationDetailsPage extends BasePage {
   async fill(info: ApplicationDetails): Promise<void> {
     await this.referralSourceSelect.selectOption({ index: 1 });
 
-    await this.provinceSelect.selectOption({ label: info.homeAddress.provinceLabel });
-    await this.amphurSelect.selectOption({ index: 1 });
-    await this.districtSelect.selectOption({ index: 1 });
-    await this.houseNumberInput.pressSequentially(info.homeAddress.houseNumber);
-    if (info.homeAddress.moo) {
-      await this.mooInput.pressSequentially(info.homeAddress.moo);
-    }
-    if (info.homeAddress.soi) {
-      await this.soiInput.pressSequentially(info.homeAddress.soi);
-    }
-    if (info.homeAddress.road) {
-      await this.roadInput.pressSequentially(info.homeAddress.road);
+    // The มือถือผ่อนสินค้า form pre-fills and locks the home address from the eligibility step.
+    if (await this.provinceSelect.isEnabled()) {
+      await this.provinceSelect.selectOption({ label: info.homeAddress.provinceLabel });
+      await this.amphurSelect.selectOption({ index: 1 });
+      await this.districtSelect.selectOption({ index: 1 });
+      await this.houseNumberInput.pressSequentially(info.homeAddress.houseNumber);
+      if (info.homeAddress.moo) {
+        await this.mooInput.pressSequentially(info.homeAddress.moo);
+      }
+      if (info.homeAddress.soi) {
+        await this.soiInput.pressSequentially(info.homeAddress.soi);
+      }
+      if (info.homeAddress.road) {
+        await this.roadInput.pressSequentially(info.homeAddress.road);
+      }
     }
 
     // Verified live: checking these auto-copies the home address into current/work sections.
@@ -178,14 +186,20 @@ export class ApplicationDetailsPage extends BasePage {
     await this.affiliatedAgencySelect.selectOption({ index: 1 });
     await this.salaryRoundsSelect.selectOption({ index: 1 });
     await this.fillSalaryPaymentRound1();
-    await this.monthlyDebtRangeSelect.selectOption({ index: 1 });
+    // Pre-filled (and locked) from the eligibility step on the มือถือผ่อนสินค้า form.
+    if (await this.monthlyDebtRangeSelect.isEnabled()) {
+      await this.monthlyDebtRangeSelect.selectOption({ index: 1 });
+    }
     await this.monthlyDebtDeductionInput.pressSequentially(info.monthlyDebtDeduction);
 
     await this.appointmentYearSelect.selectOption({ index: 1 });
     await this.appointmentMonthSelect.selectOption({ index: 1 });
 
-    await this.bankAccountNumberInput.pressSequentially(info.bankAccountNumber);
-    await this.bankBranchInput.pressSequentially(info.bankBranch);
+    // Not present on the มือถือผ่อนสินค้า form.
+    if (await this.bankAccountNumberInput.count()) {
+      await this.bankAccountNumberInput.pressSequentially(info.bankAccountNumber);
+      await this.bankBranchInput.pressSequentially(info.bankBranch);
+    }
 
     await this.reference1FirstnameInput.pressSequentially(info.reference1.firstname);
     await this.reference1LastnameInput.pressSequentially(info.reference1.lastname);
@@ -209,6 +223,9 @@ export class ApplicationDetailsPage extends BasePage {
     await this.personalLoanTermsConsentCheckbox.check();
     await this.bankLoanDeductionConsentCheckbox.check();
     await this.stampDutyConsentCheckbox.check();
+    if (await this.knoxGuardConsentCheckbox.count()) {
+      await this.knoxGuardConsentCheckbox.check();
+    }
   }
 
   /**
