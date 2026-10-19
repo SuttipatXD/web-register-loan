@@ -29,6 +29,7 @@ export const personalInfo: PersonalInfo = {
 export type LoanProduct =
   | "happyTavikoon"
   | "mobileInstallment"
+  | "mobileTanjai"
   | "kasetSukjai"
   | "carTitleLoan"
   | "landTitleLoan";
@@ -36,6 +37,7 @@ export type LoanProduct =
 export const loanApplicantNames: Record<LoanProduct, string> = {
   happyTavikoon: "แฮปปี้ทวีคูณ",
   mobileInstallment: "มือถือผ่อนสินค้า",
+  mobileTanjai: "มือถือทันใจ",
   kasetSukjai: "เกษตรสุขใจ",
   carTitleLoan: "ทะเบียนรถแลกเงิน",
   landTitleLoan: "โฉนดแลกเงิน",
@@ -87,6 +89,7 @@ export function getPersonalInfo(product: LoanProduct): PersonalInfo | null {
 const creditAmountFor: Record<LoanProduct, string> = {
   happyTavikoon: desiredCreditAmount,
   mobileInstallment: desiredCreditAmount,
+  mobileTanjai: desiredCreditAmount,
   kasetSukjai: desiredCreditAmount,
   carTitleLoan: desiredCreditAmount,
   landTitleLoan: "30000",

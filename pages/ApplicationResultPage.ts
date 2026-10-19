@@ -7,7 +7,7 @@ export class ApplicationResultPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.resultHeading = page.getByText(/สำเร็จ|อนุมัติ|ผลการสมัคร/);
+    this.resultHeading = page.getByText(/สำเร็จ|อนุมัติ|ผลการสมัคร|ได้รับการสมัคร/);
   }
 
   async waitForResult(timeout = 60000): Promise<string> {
@@ -17,6 +17,6 @@ export class ApplicationResultPage extends BasePage {
 
   async isSuccess(): Promise<boolean> {
     const text = await this.waitForResult();
-    return /สำเร็จ|อนุมัติ/.test(text);
+    return /สำเร็จ|อนุมัติ|ได้รับการสมัคร/.test(text);
   }
 }

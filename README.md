@@ -12,6 +12,7 @@
 | [tests/kaset.spec.ts](tests/kaset.spec.ts) | สมัครสินเชื่อ **เกษตรสุขใจ** | เหมือนแฮปปี้ทวีคูณ (เมนู kasetsukjai) |
 | [tests/car.spec.ts](tests/car.spec.ts) | สมัครสินเชื่อ **ทะเบียนรถแลกเงิน** | เมนู rotleakngern → เงื่อนไข → หน้าภาระหนี้ → ฟอร์มมีข้อมูลรถ → เอกสารหลายขั้น (รวมรูปรถ 4 ด้าน, เลขตัวถัง, เลขไมล์ + consent ครอบครองรถ) → ประกัน → OTP → สัญญา |
 | [tests/land.spec.ts](tests/land.spec.ts) | สมัครสินเชื่อ **โฉนดแลกเงิน** | เมนู landforcash → consent ของตัวเอง → หน้าภาระหนี้ → ฟอร์มมีข้อมูลโฉนด (เลขโฉนดสุ่มใหม่ทุกครั้ง) → เอกสาร → OTP → สัญญา (ไม่มีประกัน) |
+| [tests/tanjai.spec.ts](tests/tanjai.spec.ts) | สมัครสินเชื่อ **มือถือทันใจ** | เมนู tgf → storefront consent → ตรวจสอบคุณสมบัติ → PDPA → รายละเอียดใบสมัคร (ไม่มีหน้าเลือกสินค้า เลือกที่ร้านภายหลัง) → เอกสาร → OTP → สัญญา → "ระบบได้รับการสมัครแล้ว" |
 | [tests/mobile.spec.ts](tests/mobile.spec.ts) | สมัครสินเชื่อ **มือถือผ่อนสินค้า** | storefront → ตรวจสอบคุณสมบัติ → PDPA → เลือกสินค้า (Galaxy A17, ผ่อน 24 เดือน) → รายละเอียดใบสมัคร → เอกสาร → OTP → สัญญา → ผลลัพธ์ (ไม่มีขั้นประกัน) |
 
 ## ติดตั้ง
@@ -42,6 +43,7 @@ BASE_URL_OSM=https://app-sit.boontermeasycash.com:8443/register/osm
 | `npm run test:osm` | เทสทั้งหมดของกลุ่ม osm |
 | `npm run test:register:moih` / `test:register:osm` | เฉพาะแฮปปี้ทวีคูณ + เปิดหน้าลงทะเบียน |
 | `npm run test:mobile:moih` | เฉพาะมือถือผ่อนสินค้า (moih) |
+| `npm run test:tanjai:moih` | เฉพาะมือถือทันใจ (moih) |
 | `npm run test:kaset:moih` / `test:car:moih` / `test:land:moih` | เฉพาะเกษตรสุขใจ / ทะเบียนรถแลกเงิน / โฉนดแลกเงิน (moih) |
 | `npm test` | ทั้งหมด ใช้ `BASE_URL` / ค่า default |
 | `npm run test:headed` | เปิดเบราว์เซอร์ให้เห็นระหว่างรัน |
@@ -74,6 +76,7 @@ pages/                  Page Object ของแต่ละหน้า
   InsurancePage.ts / OtpPage.ts / ContractPage.ts / ApplicationResultPage.ts ...
 utils/loan/             ข้อมูลทดสอบ + ตัวสร้างเลขบัตร
   applyFlow.ts            โฟลว์สมัครกลาง (ใช้กับ แฮปปี้ทวีคูณ / เกษตรสุขใจ / ทะเบียนรถ / โฉนด)
+  storefrontFlow.ts       โฟลว์ storefront (ใช้กับ มือถือผ่อนสินค้า / มือถือทันใจ)
 utils/images/           รูปสำหรับอัปโหลด
 playwright.config.ts    timeout 120 วินาที, วิดีโอเปิดตลอด, deny สิทธิ์กล้อง
 ```
@@ -85,4 +88,4 @@ playwright.config.ts    timeout 120 วินาที, วิดีโอเป
 - **กล้อง:** เทสตั้งใจไม่ให้สิทธิ์กล้อง (`--deny-permission-prompts` ใน config) เพราะแอปมีหน้าถ่ายภาพสดที่ต้องถูกปฏิเสธก่อน จึงจะเข้าหน้าเลือกรูปจากเครื่องได้ ถ้าไม่ปฏิเสธ โหมด headed จะค้างรอผู้ใช้กดสิทธิ์
 - **อัปโหลดเอกสาร:** ช่องแรกใช้รูปบัตร ช่องสองรูปเซลฟี่ ที่เหลือรูปอื่น นับว่าสำเร็จเมื่อเห็นปุ่ม "เปลี่ยนรูปภาพ" (preview) ถ้าถูกปฏิเสธจะลองรูปอื่นในช่องเดิม
 - **ขั้นหน้า consent/ฟอร์มบน SIT เปลี่ยนได้:** ถ้าเทสค้างที่ปุ่ม "ถัดไป" ไม่เปิด ให้ดูวิดีโอและ `error-context.md` ใน `test-results/` ว่ามี consent หรือฟิลด์ใหม่ที่ยังไม่ถูกกรอก
-- เทสกับกลุ่ม **osm** ยังไม่เคยรันยืนยัน
+- กลุ่ม **osm** ยังใช้งานไม่ได้บน SIT: เรียก API ของกลุ่มนี้แล้วได้ 404 `No query results for model [CustomerGroup] osm` และหน้า landing `/register/osm` ว่างเปล่า script `test:osm` จึงยังรันเทสไม่ได้จนกว่าจะมีกลุ่มนี้ใน SIT
