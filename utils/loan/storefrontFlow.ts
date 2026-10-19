@@ -50,7 +50,7 @@ export async function applyForStorefrontLoan(
   await checkPage.fillMobile({
     ...options.personalInfo,
     monthlyDebt: "0",
-    workYearsLabel: "5ปี",
+    workYearsLabel: "1ปี - 3ปี",
     sideJobLabel: "พนักงานบริษัท",
     provinceLabel: "กรุงเทพมหานคร",
     houseNumber: "99",
