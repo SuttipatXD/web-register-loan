@@ -65,7 +65,11 @@ export async function applyForStorefrontLoan(
       .waitFor({ timeout: 30000 });
     await page.getByAltText(options.product.itemAlt).click();
     await page.waitForURL("**/product-detail?product=*");
-    await page.locator('input[name="color"]').first().check({ force: true });
+    // Phones have a colour choice; appliances don't.
+    const colour = page.locator('input[name="color"]').first();
+    if (await colour.count()) {
+      await colour.check({ force: true });
+    }
     await page.getByRole("button", { name: options.product.termLabel }).click();
     await page.getByRole("button", { name: "ถัดไป", exact: true }).click();
   }

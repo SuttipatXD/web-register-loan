@@ -2,6 +2,8 @@ import { Page, Locator } from '@playwright/test';
 import { PersonalInfoPage, PersonalInfo } from './PersonalInfoPage';
 
 export interface MobileLoanCheckInfo extends Omit<PersonalInfo, 'desiredCreditAmount'> {
+  /** See PersonalInfoPage.fillBirthYearOnly. */
+  birthDateUnknown?: boolean;
   monthlyDebt: string;
   workYearsLabel: string;
   sideJobLabel: string;
@@ -44,7 +46,11 @@ export class MobileLoanCheckPage extends PersonalInfoPage {
     await this.titlePrefixSelect.selectOption(info.titlePrefix);
     await this.firstnameInput.pressSequentially(info.firstname);
     await this.surnameInput.pressSequentially(info.surname);
-    await this.fillBirthday(info.dateOfBirth);
+    if (info.birthDateUnknown) {
+      await this.fillBirthYearOnly(info.dateOfBirth);
+    } else {
+      await this.fillBirthday(info.dateOfBirth);
+    }
     await this.primaryPhoneInput.pressSequentially(info.primaryPhone);
     if (info.secondaryPhone) {
       await this.secondaryPhoneInput.pressSequentially(info.secondaryPhone);

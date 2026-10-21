@@ -60,7 +60,7 @@ export class DocumentUploadPage extends BasePage {
    * picking a photo instead), but the exact count isn't fully reliable, so this retries up to
    * `maxAttempts` rather than assuming a fixed number.
    */
-  async triggerCameraAndExpectDenied(maxAttempts = 5): Promise<void> {
+  async triggerCameraAndExpectDenied(maxAttempts = 8): Promise<void> {
     await this.page.context().clearPermissions();
     for (let attempt = 0; attempt < maxAttempts; attempt++) {
       if (await this.fileInputs.count()) {
@@ -75,7 +75,16 @@ export class DocumentUploadPage extends BasePage {
         .then(() => true)
         .catch(() => false);
       if (!cameraButtonAppeared) {
-        break;
+        // Neither the camera button nor the checklist yet — the document list can still be
+        // loading ("กำลังโหลดรายการเอกสาร...") under load. Give the checklist time to mount
+        // before spending another attempt.
+        const checklist = await this.fileInputs
+          .first()
+          .waitFor({ state: 'attached', timeout: 15000 })
+          .then(() => true)
+          .catch(() => false);
+        if (checklist) return;
+        continue;
       }
 
       // The button can flicker between visible/detached across a re-render right after it
@@ -191,7 +200,13 @@ export class DocumentUploadPage extends BasePage {
       const candidates = [preferred, ...all.filter((f) => f !== preferred)];
       for (const file of candidates) {
         const before = await this.previewButtons.count();
-        await this.fileInputs.nth(i).setInputFiles(file);
+        // The app can redirect on mid-stage (e.g. to the insurance site) and drop the inputs.
+        const attached = await this.fileInputs
+          .nth(i)
+          .setInputFiles(file, { timeout: 10000 })
+          .then(() => true)
+          .catch(() => false);
+        if (!attached) return filled;
         const previewed = await this.waitForPreview(before);
         await this.dismissErrorDialog();
         if (previewed) {
@@ -238,7 +253,12 @@ export class DocumentUploadPage extends BasePage {
       );
       // The last stage asks to consent to the company taking possession of the vehicle.
       const possession = this.page.getByRole('checkbox').first();
-      if ((await possession.count()) && !(await possession.isChecked())) {
+      // Only on our own document page — a late redirect to the insurer's site has checkboxes too.
+      if (
+        /\/documents/.test(this.page.url()) &&
+        (await possession.count()) &&
+        !(await possession.isChecked())
+      ) {
         await possession.check({ force: true });
       }
       // The app may have already redirected on mid-stage (inputs gone) — nothing left to submit.

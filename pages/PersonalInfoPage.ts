@@ -93,6 +93,28 @@ export class PersonalInfoPage extends BasePage {
     await dialog.getByRole('button', { name: dayLabel, exact: true }).click();
   }
 
+  /**
+   * "ไม่ทราบวันที่ และ เดือนเกิด": tick the checkbox (by its label — the input ignores direct
+   * clicks), then the calendar becomes a decade-paged year picker (value ends up '--/--/YYYY').
+   */
+  async fillBirthYearOnly(dateOfBirth: string): Promise<void> {
+    const targetYear = parseInt(dateOfBirth.split('/')[2], 10);
+
+    await this.page.getByText('ไม่ทราบวันที่ และ เดือนเกิด').click();
+    await this.birthdayInput.click();
+    const dialog = this.page.getByRole('dialog', { name: 'เลือกวันเกิด' });
+    await dialog.waitFor({ state: 'visible' });
+
+    const yearButton = dialog.getByRole('button', { name: String(targetYear), exact: true });
+    const previous = dialog.getByRole('button', { name: 'ก่อนหน้า' });
+    const next = dialog.getByRole('button', { name: 'ถัดไป' });
+    for (let i = 0; i < 20 && !(await yearButton.isVisible()); i++) {
+      const range = (await dialog.getByRole('button', { name: /^\d{4}-\d{4}$/ }).innerText()).split('-');
+      await (targetYear < parseInt(range[0], 10) ? previous : next).click();
+    }
+    await yearButton.click();
+  }
+
   async fill(info: PersonalInfo): Promise<void> {
     await this.creditAmountSelect.selectOption(info.desiredCreditAmount);
     await this.idNumberInput.pressSequentially(info.idNumber);

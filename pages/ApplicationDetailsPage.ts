@@ -317,14 +317,23 @@ export class ApplicationDetailsPage extends BasePage {
    */
   async submitAndContinue(): Promise<void> {
     const startUrl = this.page.url();
+    const left = () => this.page.url() !== startUrl;
     for (let attempt = 0; attempt < 3; attempt++) {
+      // A slow navigation can land after the previous attempt gave up waiting; the button is
+      // gone by then, so check the URL first and never wait unbounded on the (detached) button.
+      if (left()) return;
       const deadline = Date.now() + 10000;
-      while (Date.now() < deadline && !(await this.nextButton.isEnabled())) {
+      while (
+        Date.now() < deadline &&
+        !left() &&
+        !(await this.nextButton.isEnabled({ timeout: 2000 }).catch(() => false))
+      ) {
         await this.page.waitForTimeout(300);
       }
-      await this.nextButton.click();
+      if (left()) return;
+      await this.nextButton.click({ timeout: 10000 }).catch(() => {});
       const navigated = await this.page
-        .waitForURL((url) => url.toString() !== startUrl, { timeout: 5000 })
+        .waitForURL((url) => url.toString() !== startUrl, { timeout: 15000 })
         .then(() => true)
         .catch(() => false);
       if (navigated) return;

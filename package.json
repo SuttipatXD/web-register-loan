@@ -10,6 +10,7 @@
     "test:register:moih": "LOAN_GROUP=moih playwright test tests/register.spec.ts",
     "test:mobile:moih": "LOAN_GROUP=moih playwright test tests/mobile.spec.ts",
     "test:tanjai:moih": "LOAN_GROUP=moih playwright test tests/tanjai.spec.ts",
+    "test:appliance:moih": "LOAN_GROUP=moih playwright test tests/appliance.spec.ts",
     "test:kaset:moih": "LOAN_GROUP=moih playwright test tests/kaset.spec.ts",
     "test:car:moih": "LOAN_GROUP=moih playwright test tests/car.spec.ts",
     "test:land:moih": "LOAN_GROUP=moih playwright test tests/land.spec.ts",

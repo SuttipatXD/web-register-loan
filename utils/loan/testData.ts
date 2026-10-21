@@ -30,6 +30,7 @@ export type LoanProduct =
   | "happyTavikoon"
   | "mobileInstallment"
   | "mobileTanjai"
+  | "applianceLoan"
   | "kasetSukjai"
   | "carTitleLoan"
   | "landTitleLoan";
@@ -38,9 +39,27 @@ export const loanApplicantNames: Record<LoanProduct, string> = {
   happyTavikoon: "แฮปปี้ทวีคูณ",
   mobileInstallment: "มือถือผ่อนสินค้า",
   mobileTanjai: "มือถือทันใจ",
+  applianceLoan: "เครื่องใช้ไฟฟ้า",
   kasetSukjai: "เกษตรสุขใจ",
   carTitleLoan: "ทะเบียนรถแลกเงิน",
   landTitleLoan: "โฉนดแลกเงิน",
+};
+
+/**
+ * Products tested with a specific, provided applicant instead of the generated one (the identity
+ * check on SIT accepts only certain people). Overrides the name/ID fields from `personalInfo`.
+ */
+const applicantOverrides: Partial<Record<LoanProduct, Partial<PersonalInfo>>> = {
+  applianceLoan: {
+    firstname: "เอคือ",
+    surname: "อาศิระกุล",
+    idNumber: "8710876010426",
+    idLaserCode: "JC4187585306",
+    // Born 1990-04-01 (พ.ศ. 2533), but the day/month are entered as unknown.
+    dateOfBirth: "01/04/2533",
+    birthDateUnknown: true,
+    monthlyIncome: "50000",
+  },
 };
 
 export const desiredCreditAmount = "10000";
@@ -79,7 +98,15 @@ export function getPersonalInfo(product: LoanProduct): PersonalInfo | null {
     return null;
   }
 
-  return { ...personalInfo, firstname: loanApplicantNames[product], surname: "ทดสอบ" };
+  return {
+    ...personalInfo,
+    // A fresh ID per call: tests in the same worker share this module, and SIT rejects a second
+    // application for an ID that already applied ("ไม่ผ่านการตรวจสอบ").
+    idNumber: generateThaiIdNumber(),
+    firstname: loanApplicantNames[product],
+    surname: "ทดสอบ",
+    ...applicantOverrides[product],
+  };
 }
 
 /**
@@ -90,6 +117,7 @@ const creditAmountFor: Record<LoanProduct, string> = {
   happyTavikoon: desiredCreditAmount,
   mobileInstallment: desiredCreditAmount,
   mobileTanjai: desiredCreditAmount,
+  applianceLoan: desiredCreditAmount,
   kasetSukjai: desiredCreditAmount,
   carTitleLoan: desiredCreditAmount,
   landTitleLoan: "30000",
