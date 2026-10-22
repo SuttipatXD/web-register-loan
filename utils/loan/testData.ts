@@ -49,18 +49,19 @@ export const loanApplicantNames: Record<LoanProduct, string> = {
  * Products tested with a specific, provided applicant instead of the generated one (the identity
  * check on SIT accepts only certain people). Overrides the name/ID fields from `personalInfo`.
  */
-const applicantOverrides: Partial<Record<LoanProduct, Partial<PersonalInfo>>> = {
-  applianceLoan: {
-    firstname: "เอคือ",
-    surname: "อาศิระกุล",
-    idNumber: "8710876010426",
-    idLaserCode: "JC4187585306",
-    // Born 1990-04-01 (พ.ศ. 2533), but the day/month are entered as unknown.
-    dateOfBirth: "01/04/2533",
-    birthDateUnknown: true,
-    monthlyIncome: "50000",
-  },
-};
+const applicantOverrides: Partial<Record<LoanProduct, Partial<PersonalInfo>>> =
+  {
+    applianceLoan: {
+      firstname: "เอคือ",
+      surname: "อาศิระกุล",
+      idNumber: "8710876010426",
+      idLaserCode: "JC4187585306",
+      // Born 1990-04-01 (พ.ศ. 2533); the day is entered as unknown, month and year are picked.
+      dateOfBirth: "01/04/2533",
+      birthDayUnknown: true,
+      monthlyIncome: "50000",
+    },
+  };
 
 export const desiredCreditAmount = "10000";
 
@@ -94,7 +95,11 @@ export const applicationDetails: ApplicationDetails = {
  * this returns null (tests skip) until the identity fields are filled with QA-approved values.
  */
 export function getPersonalInfo(product: LoanProduct): PersonalInfo | null {
-  if (!personalInfo.idNumber || !personalInfo.idLaserCode || !personalInfo.primaryPhone) {
+  if (
+    !personalInfo.idNumber ||
+    !personalInfo.idLaserCode ||
+    !personalInfo.primaryPhone
+  ) {
     return null;
   }
 
@@ -124,7 +129,9 @@ const creditAmountFor: Record<LoanProduct, string> = {
 };
 
 /** Full test data for any loan product using the shared flow; null until personal info is set. */
-export function getLoanTestData(product: LoanProduct): LoanApplicationData | null {
+export function getLoanTestData(
+  product: LoanProduct,
+): LoanApplicationData | null {
   const info = getPersonalInfo(product);
   if (!info) {
     return null;

@@ -94,16 +94,37 @@ export class PersonalInfoPage extends BasePage {
   }
 
   /**
+   * "ไม่ทราบวันที่เกิด อย่างเดียว (โปรดเลือกเดือนและปีเกิด)": tick the checkbox (by its label), then
+   * the calendar opens on a month grid for the current year; clicking the year in its header
+   * switches to the decade-paged year picker, and picking a year returns to the month grid.
+   */
+  async fillBirthMonthYear(dateOfBirth: string): Promise<void> {
+    const month = parseInt(dateOfBirth.split('/')[1], 10);
+
+    await this.page.getByText('ไม่ทราบวันที่เกิด อย่างเดียว').click();
+    const dialog = await this.pickBirthYear(dateOfBirth, true);
+    await dialog.getByRole('button', { name: MONTH_ABBR_TH[month - 1], exact: true }).click();
+  }
+
+  /**
    * "ไม่ทราบวันที่ และ เดือนเกิด": tick the checkbox (by its label — the input ignores direct
    * clicks), then the calendar becomes a decade-paged year picker (value ends up '--/--/YYYY').
    */
   async fillBirthYearOnly(dateOfBirth: string): Promise<void> {
+    await this.page.getByText('ไม่ทราบวันที่ และ เดือนเกิด').click();
+    await this.pickBirthYear(dateOfBirth);
+  }
+
+  private async pickBirthYear(dateOfBirth: string, fromMonthView = false): Promise<Locator> {
     const targetYear = parseInt(dateOfBirth.split('/')[2], 10);
 
-    await this.page.getByText('ไม่ทราบวันที่ และ เดือนเกิด').click();
     await this.birthdayInput.click();
     const dialog = this.page.getByRole('dialog', { name: 'เลือกวันเกิด' });
     await dialog.waitFor({ state: 'visible' });
+
+    if (fromMonthView) {
+      await dialog.getByRole('button', { name: /^\d{4}$/ }).click();
+    }
 
     const yearButton = dialog.getByRole('button', { name: String(targetYear), exact: true });
     const previous = dialog.getByRole('button', { name: 'ก่อนหน้า' });
@@ -113,6 +134,7 @@ export class PersonalInfoPage extends BasePage {
       await (targetYear < parseInt(range[0], 10) ? previous : next).click();
     }
     await yearButton.click();
+    return dialog;
   }
 
   async fill(info: PersonalInfo): Promise<void> {

@@ -4,8 +4,10 @@ export interface PersonalInfo {
   surname: string;
   /** 'DD/MM/YYYY' in Buddhist era. With `birthDateUnknown`, only the year is used. */
   dateOfBirth: string;
-  /** The applicant doesn't know their day/month of birth — tick "ไม่ทราบวันที่ และ เดือนเกิด" and pick only the year. */
+  /** The applicant doesn't know their day of birth — tick "ไม่ทราบวันที่เกิด อย่างเดียว (โปรดเลือกเดือนและปีเกิด)" and pick month + year. */
   birthDateUnknown?: boolean;
+  /** The applicant knows month and year but not the day — tick "ไม่ทราบวันที่เกิด อย่างเดียว (โปรดเลือกเดือนและปีเกิด)" and pick month + year. */
+  birthDayUnknown?: boolean;
   idNumber: string;
   idLaserCode: string;
   primaryPhone: string;
