@@ -74,7 +74,8 @@ export async function applyForStorefrontLoan(
     await page.getByRole("button", { name: "ถัดไป", exact: true }).click();
   }
 
-  await page.waitForURL("**/register/moih/form");
+  const group = (process.env.LOAN_GROUP || "moih").toLowerCase();
+  await page.waitForURL(`**/register/${group}/form`);
   const detailsPage = new ApplicationDetailsPage(page);
   await detailsPage.fill(options.applicationDetails);
   await detailsPage.submitAndContinue();

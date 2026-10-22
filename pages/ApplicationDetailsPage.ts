@@ -245,8 +245,8 @@ export class ApplicationDetailsPage extends BasePage {
     await this.sameAsHomeForWorkCheckbox.check();
 
     await this.occupationSelect.selectOption({ index: 1 });
-    await this.officeNameSelect.selectOption({ label: 'สถานที่ทำการ' });
-    await this.positionSelect.selectOption({ label: 'ผู้ใหญ่บ้าน' });
+    await this.officeNameSelect.selectOption({ index: 1 });
+    await this.positionSelect.selectOption({ index: 1 });
 
     await this.noMoreThanThreeInstitutionsRadio.check();
     await this.incomeBankSelect.selectOption({ index: 1 });

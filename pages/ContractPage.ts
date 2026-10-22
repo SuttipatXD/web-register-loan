@@ -13,7 +13,9 @@ export class ContractPage extends BasePage {
   }
 
   async continue(): Promise<void> {
-    await this.downloadLink.waitFor({ state: 'visible', timeout: 30000 });
+    // Some groups (e.g. subdistrict) render the contract page without the PDF link, so it is
+    // only given a chance to show up rather than required.
+    await this.downloadLink.waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
     await this.nextButton.click();
   }
 }

@@ -1,3 +1,14 @@
+export interface GuarantorInfo {
+  idNumber: string;
+  titlePrefix: string;
+  firstname: string;
+  surname: string;
+  /** 'DD/MM/YYYY' in Buddhist era. */
+  dateOfBirth: string;
+  primaryPhone: string;
+  secondaryPhone?: string;
+}
+
 export interface PersonalInfo {
   titlePrefix: string;
   firstname: string;
@@ -13,6 +24,8 @@ export interface PersonalInfo {
   primaryPhone: string;
   secondaryPhone?: string;
   monthlyIncome: string;
+  /** Only filled when the group's form has a guarantor section. */
+  guarantor?: GuarantorInfo;
 }
 
 export interface InsuranceInfo {

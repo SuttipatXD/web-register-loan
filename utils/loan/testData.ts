@@ -54,7 +54,7 @@ const applicantOverrides: Partial<Record<LoanProduct, Partial<PersonalInfo>>> =
     applianceLoan: {
       firstname: "เอคือ",
       surname: "อาศิระกุล",
-      idNumber: "8710876010426",
+      idNumber: generateThaiIdNumber(),
       idLaserCode: "JC4187585306",
       // Born 1990-04-01 (พ.ศ. 2533); the day is entered as unknown, month and year are picked.
       dateOfBirth: "01/04/2533",
@@ -110,6 +110,14 @@ export function getPersonalInfo(product: LoanProduct): PersonalInfo | null {
     idNumber: generateThaiIdNumber(),
     firstname: loanApplicantNames[product],
     surname: "ทดสอบ",
+    guarantor: {
+      idNumber: generateThaiIdNumber(),
+      titlePrefix: "นาย",
+      firstname: "ผู้ค้ำ",
+      surname: "ทดสอบ",
+      dateOfBirth: "01/01/2530",
+      primaryPhone: personalInfo.primaryPhone,
+    },
     ...applicantOverrides[product],
   };
 }

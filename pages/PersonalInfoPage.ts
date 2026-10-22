@@ -1,6 +1,17 @@
 import { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
+export interface GuarantorInfo {
+  idNumber: string;
+  titlePrefix: string;
+  firstname: string;
+  surname: string;
+  /** Buddhist-era date, format 'DD/MM/YYYY'. */
+  dateOfBirth: string;
+  primaryPhone: string;
+  secondaryPhone?: string;
+}
+
 export interface PersonalInfo {
   desiredCreditAmount: string;
   idNumber: string;
@@ -13,6 +24,8 @@ export interface PersonalInfo {
   primaryPhone: string;
   secondaryPhone?: string;
   monthlyIncome: string;
+  /** Filled only when the group's form has a guarantor section ("ข้อมูลผู้ค้ำ"). */
+  guarantor?: GuarantorInfo;
 }
 
 const MONTH_ABBR_TH = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
@@ -30,6 +43,7 @@ const MONTH_FULL_TH = [
 export class PersonalInfoPage extends BasePage {
   readonly creditAmountSelect: Locator;
   readonly idNumberInput: Locator;
+  readonly guarantorIdNumberInput: Locator;
   readonly idLaserCodeInput: Locator;
   readonly titlePrefixSelect: Locator;
   readonly firstnameInput: Locator;
@@ -43,13 +57,15 @@ export class PersonalInfoPage extends BasePage {
   constructor(page: Page) {
     super(page);
     this.creditAmountSelect = page.getByLabel('วงเงินที่ท่านต้องการ');
-    this.idNumberInput = page.getByLabel('เลขบัตรประชาชน');
+    // Forms with a guarantor section have two "เลขบัตรประชาชน" labels, so target by name.
+    this.idNumberInput = page.locator('input[name="cus_id_number"]');
+    this.guarantorIdNumberInput = page.locator('input[name="guarantor_id_number"]');
     this.idLaserCodeInput = page.getByLabel('รหัสหลังบัตรประชาชน');
     this.titlePrefixSelect = page.locator('#cus_title');
     this.firstnameInput = page.locator('#cus_firstname');
-    this.surnameInput = page.getByLabel('นามสกุล');
+    this.surnameInput = page.locator('#cus_lastname');
     this.birthdayInput = page.locator('#cus_birthday');
-    this.primaryPhoneInput = page.getByLabel('หมายเลขโทรศัพท์หลัก');
+    this.primaryPhoneInput = page.locator('#cus_mobile');
     this.secondaryPhoneInput = page.getByLabel('หมายเลขโทรศัพท์สำรอง');
     this.monthlyIncomeInput = page.getByLabel('รายได้ต่อเดือน');
     this.nextButton = page.getByRole('button', { name: /ถัดไป/ });
@@ -61,13 +77,13 @@ export class PersonalInfoPage extends BasePage {
    * where the prev/next arrows step by year — that's used to jump to a distant birth year
    * instead of paging day-by-day.
    */
-  async fillBirthday(dateOfBirth: string): Promise<void> {
+  async fillBirthday(dateOfBirth: string, input: Locator = this.birthdayInput): Promise<void> {
     const [dayStr, monthStr, yearStr] = dateOfBirth.split('/');
     const day = parseInt(dayStr, 10);
     const month = parseInt(monthStr, 10);
     const targetYear = parseInt(yearStr, 10);
 
-    await this.birthdayInput.click();
+    await input.click();
     const dialog = this.page.getByRole('dialog', { name: 'เลือกวันเกิด' });
     await dialog.waitFor({ state: 'visible' });
 
@@ -150,6 +166,35 @@ export class PersonalInfoPage extends BasePage {
       await this.secondaryPhoneInput.pressSequentially(info.secondaryPhone);
     }
     await this.monthlyIncomeInput.pressSequentially(info.monthlyIncome);
+    await this.fillGuarantorIfPresent(info.guarantor);
+  }
+
+  /**
+   * Groups differ in whether the form asks for a guarantor ("ข้อมูลผู้ค้ำ"), so this only fills
+   * the section when it is on the page. Its labels repeat the applicant's, so the guarantor's
+   * fields are the last match for each label.
+   */
+  async fillGuarantorIfPresent(guarantor?: GuarantorInfo): Promise<void> {
+    if (!guarantor || !(await this.page.getByRole('heading', { name: 'ข้อมูลผู้ค้ำ' }).count())) {
+      return;
+    }
+    const { page } = this;
+    await this.guarantorIdNumberInput.pressSequentially(guarantor.idNumber);
+    await page.getByRole('combobox', { name: /^คำนำหน้าชื่อ/ }).last().selectOption(guarantor.titlePrefix);
+    await page.locator('#guarantor_firstname').pressSequentially(guarantor.firstname);
+    await page.locator('#guarantor_lastname').pressSequentially(guarantor.surname);
+    await this.fillBirthday(
+      guarantor.dateOfBirth,
+      page.getByRole('combobox', { name: /วัน\/เดือน\/ปี/ }).last(),
+    );
+    await page.getByRole('combobox', { name: /^จังหวัดตามบัตรประชาชน/ }).selectOption({ index: 1 });
+    await page.getByRole('combobox', { name: /^อาชีพผู้ค้ำประกัน/ }).selectOption({ index: 1 });
+    await page.locator('#guarantor_mobile').pressSequentially(guarantor.primaryPhone);
+    if (guarantor.secondaryPhone) {
+      await page.getByLabel('หมายเลขโทรศัพท์สำรอง').last().pressSequentially(guarantor.secondaryPhone);
+    }
+    await page.getByRole('combobox', { name: /^ปีที่แต่งตั้ง/ }).selectOption({ index: 1 });
+    await page.getByRole('combobox', { name: /^เดือนที่แต่งตั้ง/ }).selectOption({ index: 1 });
   }
 
   /**

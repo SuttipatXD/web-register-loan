@@ -6,6 +6,7 @@
   "scripts": {
     "test": "playwright test",
     "test:moih": "LOAN_GROUP=moih playwright test",
+    "test:subdistrict": "LOAN_GROUP=subdistrict playwright test",
     "test:osm": "LOAN_GROUP=osm playwright test",
     "test:register:moih": "LOAN_GROUP=moih playwright test tests/register.spec.ts",
     "test:mobile:moih": "LOAN_GROUP=moih playwright test tests/mobile.spec.ts",
