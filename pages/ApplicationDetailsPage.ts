@@ -210,8 +210,23 @@ export class ApplicationDetailsPage extends BasePage {
     await this.landOwnerSelect.selectOption({ label: 'ตนเอง' });
   }
 
+  /** Picks the referral-source option whose text contains `text` (whitespace-normalised). */
+  async selectReferralSource(text: string): Promise<void> {
+    const normalise = (t: string) => t.replace(/\s+/g, '');
+    const labels = await this.referralSourceSelect.locator('option').allTextContents();
+    const match = labels.find((l) => normalise(l).includes(normalise(text)));
+    if (!match) {
+      throw new Error(`Referral source "${text}" not found in: ${labels.join(' | ')}`);
+    }
+    await this.referralSourceSelect.selectOption({ label: match });
+  }
+
   async fill(info: ApplicationDetails): Promise<void> {
-    await this.referralSourceSelect.selectOption({ index: 1 });
+    if (info.referralSource) {
+      await this.selectReferralSource(info.referralSource);
+    } else {
+      await this.referralSourceSelect.selectOption({ index: 1 });
+    }
     // Pre-selected on most products; a required choice on ทะเบียนรถแลกเงิน.
     if (!(await this.objectiveSelect.inputValue())) {
       await this.objectiveSelect.selectOption({ index: 1 });

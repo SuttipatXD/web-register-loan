@@ -49,6 +49,8 @@ export interface ReferenceContact {
 }
 
 export interface ApplicationDetails {
+  /** Text of the "ท่านทราบการสมัครสินเชื่อนี้จากช่องทางใด" option to pick; defaults to the first real option. */
+  referralSource?: string;
   homeAddress: Address;
   monthlyDebtDeduction: string;
   bankAccountNumber: string;
