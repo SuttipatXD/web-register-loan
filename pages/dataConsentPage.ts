@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from './basePage';
 
 /**
  * PDPA data-disclosure consent screen ("ความยินยอมเปิดเผยข้อมูล") shown after the personal-info

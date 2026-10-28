@@ -34,7 +34,7 @@ BASE_URL_OSM=https://app-sit.boontermeasycash.com:8443/register/osm
 ```
 
 ตัวแปร `LOAN_GROUP` (`moih` / `osm`) เป็นตัวเลือกว่าใช้ `BASE_URL_<กลุ่ม>` ตัวไหน ถ้าไม่ตั้งจะใช้ `BASE_URL` และถ้าไม่มีอีกจะใช้ค่า default ของ moih
-การเลือกทำใน [pages/BasePage.ts](pages/BasePage.ts) เพิ่มกลุ่มใหม่ได้โดยเพิ่ม `BASE_URL_<ชื่อ>` แล้วเพิ่ม script
+การเลือกทำใน [pages/basePage.ts](pages/basePage.ts) เพิ่มกลุ่มใหม่ได้โดยเพิ่ม `BASE_URL_<ชื่อ>` แล้วเพิ่ม script
 
 ## คำสั่งรันเทส
 
@@ -60,7 +60,7 @@ BASE_URL_OSM=https://app-sit.boontermeasycash.com:8443/register/osm
 - **ผู้สมัคร:** ชื่อ = ชื่อสินเชื่อ (`loanApplicantNames`) นามสกุล = "ทดสอบ" เช่น "แฮปปี้ทวีคูณ ทดสอบ"
 - **เลขบัตรประชาชน:** สุ่มใหม่ทุกครั้งที่รัน (ผ่าน checksum ฝั่งหน้าเว็บ) จาก [utils/loan/generateThaiId.ts](utils/loan/generateThaiId.ts)
 - **เบอร์โทร / รหัสหลังบัตร / รายได้ / ที่อยู่ / ผู้อ้างอิง:** แก้ได้ในไฟล์เดียวกัน
-- **รูปเอกสาร:** [utils/images/](utils/images/) (`id_card.png`, `face.png`, `other.png`)
+- **รูปเอกสาร:** [utils/images/](utils/images/) (`idCard.png`, `face.png`, `other.png`)
 - ฟังก์ชัน `getPersonalInfo(product)` และ `getHappyTavikoonTestData()` คืน `null` ถ้าข้อมูลผู้สมัครไม่ครบ เทสจะ skip เอง
 
 เพิ่มสินเชื่อใหม่: เพิ่มชื่อใน `LoanProduct`, `loanApplicantNames` และ `creditAmountFor` แล้วเขียนเทสโดยเรียก `applyForLoan(page, { menuSlug, ... })` พร้อม `getLoanTestData('<ชื่อ>')` (ถ้าโฟลว์ต่างจากโฟลว์กลาง ให้เขียนเทสแยกแบบ `mobile.spec.ts`)

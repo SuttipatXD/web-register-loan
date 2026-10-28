@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from './basePage';
 
 /** Final screen showing the outcome of the loan application. Locators unverified — see DocumentUploadPage note. */
 export class ApplicationResultPage extends BasePage {

@@ -1,5 +1,5 @@
 import { Page, Locator, Response } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from './basePage';
 
 export class RegisterPage extends BasePage {
   readonly path = '';

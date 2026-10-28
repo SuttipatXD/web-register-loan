@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { PersonalInfoPage, PersonalInfo } from './PersonalInfoPage';
+import { PersonalInfoPage, PersonalInfo } from './personalInfoPage';
 
 export interface MobileLoanCheckInfo extends Omit<PersonalInfo, 'desiredCreditAmount'> {
   /** See PersonalInfoPage.fillBirthYearOnly. */

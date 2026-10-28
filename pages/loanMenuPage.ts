@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from './basePage';
 
 /** A loan product's menu page (/menu/<slug>); defaults to "สินเชื่อ แฮปปี้ ทวีคูณ" (sukjai). */
 export class LoanMenuPage extends BasePage {

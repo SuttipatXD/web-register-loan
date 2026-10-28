@@ -1,5 +1,5 @@
 import { Page, expect } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from './basePage';
 
 /**
  * Credit-protection insurance page shown after document upload. The form is now an insurer's

@@ -1,15 +1,15 @@
 import { Page, expect } from '@playwright/test';
 import * as path from 'path';
-import { LoanMenuPage } from '../../pages/LoanMenuPage';
-import { EligibilityPage } from '../../pages/EligibilityPage';
-import { PersonalInfoPage } from '../../pages/PersonalInfoPage';
-import { DataConsentPage } from '../../pages/DataConsentPage';
-import { ApplicationDetailsPage } from '../../pages/ApplicationDetailsPage';
-import { DocumentUploadPage } from '../../pages/DocumentUploadPage';
-import { InsurancePage } from '../../pages/InsurancePage';
-import { OtpPage } from '../../pages/OtpPage';
-import { ContractPage } from '../../pages/ContractPage';
-import { ApplicationResultPage } from '../../pages/ApplicationResultPage';
+import { LoanMenuPage } from '../../pages/loanMenuPage';
+import { EligibilityPage } from '../../pages/eligibilityPage';
+import { PersonalInfoPage } from '../../pages/personalInfoPage';
+import { DataConsentPage } from '../../pages/dataConsentPage';
+import { ApplicationDetailsPage } from '../../pages/applicationDetailsPage';
+import { DocumentUploadPage } from '../../pages/documentUploadPage';
+import { InsurancePage } from '../../pages/insurancePage';
+import { OtpPage } from '../../pages/otpPage';
+import { ContractPage } from '../../pages/contractPage';
+import { ApplicationResultPage } from '../../pages/applicationResultPage';
 import { LoanApplicationData } from './types';
 
 const IMAGES_DIR = path.join(__dirname, '..', 'images');

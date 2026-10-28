@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from './basePage';
 
 /** T&C / eligibility criteria screen shown before the application form (/register/moih/eligibility). */
 export class EligibilityPage extends BasePage {

@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from './basePage';
 
 /** Loan contract preview shown after OTP confirmation (PDF download link + "ถัดไป"). */
 export class ContractPage extends BasePage {

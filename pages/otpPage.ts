@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from './basePage';
 
 /**
  * SMS OTP verification page (/register/moih/otp) shown after declining/accepting insurance.

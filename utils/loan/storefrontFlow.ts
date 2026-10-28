@@ -1,14 +1,14 @@
 import { Page, expect } from "@playwright/test";
 import * as path from "path";
-import { RegisterPage } from "../../pages/RegisterPage";
-import { LoanMenuPage } from "../../pages/LoanMenuPage";
-import { MobileLoanCheckPage } from "../../pages/MobileLoanCheckPage";
-import { DataConsentPage } from "../../pages/DataConsentPage";
-import { ApplicationDetailsPage } from "../../pages/ApplicationDetailsPage";
-import { DocumentUploadPage } from "../../pages/DocumentUploadPage";
-import { OtpPage } from "../../pages/OtpPage";
-import { ContractPage } from "../../pages/ContractPage";
-import { ApplicationResultPage } from "../../pages/ApplicationResultPage";
+import { RegisterPage } from "../../pages/registerPage";
+import { LoanMenuPage } from "../../pages/loanMenuPage";
+import { MobileLoanCheckPage } from "../../pages/mobileLoanCheckPage";
+import { DataConsentPage } from "../../pages/dataConsentPage";
+import { ApplicationDetailsPage } from "../../pages/applicationDetailsPage";
+import { DocumentUploadPage } from "../../pages/documentUploadPage";
+import { OtpPage } from "../../pages/otpPage";
+import { ContractPage } from "../../pages/contractPage";
+import { ApplicationResultPage } from "../../pages/applicationResultPage";
 import { PersonalInfo, ApplicationDetails } from "./types";
 
 const IMAGES_DIR = path.join(__dirname, "..", "images");

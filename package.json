@@ -14,6 +14,7 @@
     "test:appliance:moih": "LOAN_GROUP=moih playwright test tests/appliance.spec.ts",
     "test:kaset:moih": "LOAN_GROUP=moih playwright test tests/kaset.spec.ts",
     "test:car:moih": "LOAN_GROUP=moih playwright test tests/car.spec.ts",
+    "test:referral:moih": "LOAN_GROUP=moih playwright test tests/referral.spec.ts",
     "test:land:moih": "LOAN_GROUP=moih playwright test tests/land.spec.ts",
     "test:register:osm": "LOAN_GROUP=osm playwright test tests/register.spec.ts",
     "test:headed": "playwright test --headed",

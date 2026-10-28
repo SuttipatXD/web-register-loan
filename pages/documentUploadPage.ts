@@ -1,5 +1,5 @@
 import { Page, Locator } from '@playwright/test';
-import { BasePage } from './BasePage';
+import { BasePage } from './basePage';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -141,7 +141,7 @@ export class DocumentUploadPage extends BasePage {
    * (a trivial ~2KB placeholder fails identically to a 1.4MB real photo); wrong multipart
    * shape (intercepted the app's own `fetch`/XHR calls and confirmed the FormData is exactly
    * `file_id=<slot id>` + `file=<valid image/png File>`, matching what a real browser upload
-   * would send); and semantic mismatch (the actual id_card.png sent to the ID-card slot still
+   * would send); and semantic mismatch (the actual idCard.png sent to the ID-card slot still
    * fails). Since a correctly-shaped request with a genuine ID card photo is rejected
    * identically to a 2KB placeholder, the fault is server-side in this SIT environment, not in
    * how this page constructs the upload. Left as best-effort per QA direction — this method
@@ -156,7 +156,7 @@ export class DocumentUploadPage extends BasePage {
       if (!fs.existsSync(file)) throw new Error(`Missing test image ${file}`);
       return file;
     };
-    const idCard = pick('id_card.png');
+    const idCard = pick('idCard.png');
     const face = pick('face.png');
     const other = pick('other.png');
 
@@ -193,7 +193,7 @@ export class DocumentUploadPage extends BasePage {
     slotCount: number,
     preferredFor: (index: number) => string
   ): Promise<number> {
-    const all = ['id_card.png', 'face.png', 'other.png'].map((n) => this.imagePath(n));
+    const all = ['idCard.png', 'face.png', 'other.png'].map((n) => this.imagePath(n));
     let filled = 0;
     for (let i = 0; i < slotCount; i++) {
       const preferred = preferredFor(i);
